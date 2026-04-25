@@ -1,90 +1,128 @@
-# QQMusic QMC Decoder (convert QMC File to MP3 or FLAC)
+# QQMusic QMC Decoder（Fork 版）
 
-[![LICENSE](https://img.shields.io/badge/license-Anti%20996-blue.svg?style=flat-square)](https://github.com/996icu/996.ICU/blob/master/LICENSE)
-[![LICENSE](https://img.shields.io/badge/license-MIT-red.svg?style=flat-square)](https://github.com/Presburger/qmc-decoder/blob/master/LICENSE)
+这是基于上游项目修改的个人 fork 版本。
 
-![Build Binary](https://github.com/Presburger/qmc-decoder/workflows/Build%20Binary/badge.svg)
+- 上游项目：<https://github.com/Presburger/qmc-decoder>
+- 原项目作者与原始许可证归上游所有
+- 本仓库主要针对 Windows 批量使用流程和 MP3 转换流程做了调整
 
-***SUPPORT QMC3/QMC0/QMCFLAC, Faster***
+这不是上游官方发布仓库。
 
-### MUSIC FILE TAG FIX, CAN TRY THIS SOFTWARE 
-[Tag Editor](https://amvidia.com/tag-editor)
-## Release
+## 与上游差异
 
-binary executable file is released [release](https://github.com/Presburger/qmc-decoder/releases)
+这个 fork 目前主要有这些差异：
 
-## Build
+- 启动后会依次询问：
+  1. 输入目录
+  2. 解码输出目录
+  3. MP3 输出目录
+- 第三个目录留空时，只解码，不转 MP3
+- 会保留输入目录下的相对目录结构
+- 处理顺序改为：
+  1. 先完成全部文件解码
+  2. 再统一开始 MP3 转换
+- MP3 转换改为调用 `ffmpeg`
+- MP3 参数使用 `libmp3lame -q:a 0`
+- 改进了 Windows 下中文、日文文件名的路径处理
+- 交互模式结束后不会立刻关窗，方便查看日志
 
-* for linux
+## 支持格式
 
-```shell
-git clone https://github.com/Presburger/qmc-decoder.git
-cd qmc-decoder
-git submodule update --init
-mkdir build
-cd build
-cmake ..
-make
-```
+- `.qmc3`
+- `.qmc0`
+- `.qmcflac`
+- `.qmcogg`
 
-* for macOS
-```shell
-# install cmake 
-brew install cmake
-git clone https://github.com/Presburger/qmc-decoder.git
-cd qmc-decoder
-git submodule update --init
-mkdir build && cd build
-cmake ..
-make
-```
+## 输出说明
 
-* for windows
+- 解码后的原始音频会输出到“解码输出目录”
+- 如果填写了“MP3 输出目录”，程序会在全部解码完成后再批量转成 MP3
+- MP3 使用 VBR 模式，参数为 `-q:a 0`
+
+## 运行依赖
+
+- CMake
+- C++ 编译器
+- `ffmpeg`
+
+如果需要 MP3 转换，`ffmpeg` 需要满足以下任一条件：
+
+- 已加入 `PATH`
+- 放在 `qmc-decoder.exe` 同目录下
+
+## 构建
+
+### Windows
 
 ```bat
-# PowerShell, please install MSVC compiler and Git with environment variables configured
-# or in x86 or x64 Native Tools Command Prompt for VS 2019 
-git clone https://github.com/Presburger/qmc-decoder.git
-cd qmc-decoder
-git submodule update --init
+git clone <你的仓库地址>
+cd <仓库目录>
+git submodule update --init --recursive
 mkdir build
 cd build
 cmake -G "NMake Makefiles" .. -DCMAKE_BUILD_TYPE=Release
 nmake
 ```
 
-## Convert
+### Linux / macOS
 
-Before running, make sure `ffmpeg` is available in `PATH`.
+```bash
+git clone <你的仓库地址>
+cd <仓库目录>
+git submodule update --init --recursive
+mkdir build
+cd build
+cmake ..
+make
+```
 
-Run the executable directly, then enter:
+## 用法
 
-1. Input directory
-2. Output directory for decoded audio
-3. MP3 output directory (leave empty to skip MP3 conversion)
+### 交互模式
 
-The program will scan the input directory recursively, decode `.qmc3`, `.qmc0`, `.qmcflac`, and `.qmcogg` into the output directory while preserving the relative directory structure.
+直接运行：
 
-If an MP3 output directory is provided, it will also use `ffmpeg` to convert the decoded files to MP3 with `libmp3lame -q:a 0` (VBR, lowest compression / highest quality).
+```bash
+qmc-decoder
+```
 
-You can also use the CLI:
+然后按提示输入：
+
+1. 输入目录
+2. 解码输出目录
+3. MP3 输出目录（留空则跳过 MP3 转换）
+
+### 命令行模式
+
+仅批量解码：
 
 ```bash
 qmc-decoder INPUT_DIR OUTPUT_DIR
+```
+
+批量解码并在全部解码完成后再转 MP3：
+
+```bash
 qmc-decoder INPUT_DIR OUTPUT_DIR MP3_OUTPUT_DIR
+```
+
+单文件解码：
+
+```bash
 qmc-decoder /PATH/TO/SONG
 ```
 
-For macOS users, put the `decoder.command` and `qmc-decoder` files in the directory that contains the qmc music files. Double-clike on the `decoder.command` file.
+说明：单文件模式当前只会在原文件旁边输出解码结果，不会进入 MP3 批量转换阶段。
 
-![EjHn9U.gif](https://s2.ax1x.com/2019/05/19/EjHn9U.gif)
+## 说明
 
-For windows user, just click the `decoder-win.exe` when you put the `decoder-win.exe` into your qmc file directory, it will convert all qmc file automatically.
+- 这个 fork 更偏向个人实际使用场景的整理版本
+- 如果你需要上游历史、原始说明或官方 release，请查看上游仓库
+- 某些解码后的 FLAC 文件在 `ffmpeg` 中可能仍会出现解码警告，但只要 `ffmpeg` 接受输入，通常仍可继续转码
 
-![tW1w7D.gif](https://s1.ax1x.com/2020/06/08/tW1w7D.gif)
+## 许可证
 
-* Todo
+许可证见 [LICENSE](LICENSE)。
 
-support auto fetch albums
-
-support auto fix music meta data
+上游项目地址：
+<https://github.com/Presburger/qmc-decoder>
