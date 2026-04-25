@@ -55,14 +55,25 @@ nmake
 
 ## Convert
 
-Run the following command from terminal:
+Before running, make sure `ffmpeg` is available in `PATH`.
+
+Run the executable directly, then enter:
+
+1. Input directory
+2. Output directory for decoded audio
+3. MP3 output directory (leave empty to skip MP3 conversion)
+
+The program will scan the input directory recursively, decode `.qmc3`, `.qmc0`, `.qmcflac`, and `.qmcogg` into the output directory while preserving the relative directory structure.
+
+If an MP3 output directory is provided, it will also use `ffmpeg` to convert the decoded files to MP3 with `libmp3lame -q:a 0` (VBR, lowest compression / highest quality).
+
+You can also use the CLI:
+
 ```bash
+qmc-decoder INPUT_DIR OUTPUT_DIR
+qmc-decoder INPUT_DIR OUTPUT_DIR MP3_OUTPUT_DIR
 qmc-decoder /PATH/TO/SONG
 ```
-
-Or:
-
-Put the execuatable file in the directory that contains the qmc music files. Run the execuatable.
 
 For macOS users, put the `decoder.command` and `qmc-decoder` files in the directory that contains the qmc music files. Double-clike on the `decoder.command` file.
 
